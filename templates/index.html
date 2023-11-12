@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cryptocurrency Prices</title>
+    <!-- Include Bootstrap CSS and Bootstrap Darkly theme -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap-theme.min.css" rel="stylesheet">
+    <!-- Include Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Add custom CSS for a darker background */
+        body {
+            background-color: #343a40; /* Dark gray background */
+            color: #ffffff; /* White text color */
+        }
+
+        .container {
+            background-color: #212529; /* Darker background for the container */
+            padding: 20px;
+            border-radius: 10px; /* Rounded corners for the container */
+        }
+
+        table {
+            background-color: #343a40; /* Dark gray background for the table */
+        }
+
+        table th, table td {
+            color: #ffffff; /* White text color for table headers and data */
+        }
+
+        .chart-container {
+            max-width: 200px; /* Set a maximum width for the chart containers */
+            max-height: 150px; /* Set a maximum height for the chart containers to make them smaller */
+        }
+
+        .up-arrow {
+            color: green;
+        }
+
+        .down-arrow {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-5 mb-4">Cryptocurrency Prices</h1>
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>Coin</th>
+                    <th>Price (USD)</th>
+                    <th>Change (24h)</th>
+                    <th>Change (1h)</th>
+                    <th>7 Days Chart</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for coin, info in crypto_data.items() %}
+                    <tr>
+                        <td>{{ info['coin'] }}</td>
+                        <td>{{ info['price'] }}</td>
+                        <td>
+                            {% if info['change_day'] > 0 %}
+                                <span class="up-arrow">▲</span>
+                            {% elif info['change_day'] < 0 %}
+                                <span class="down-arrow">▼</span>
+                            {% endif %}
+                            {{ info['change_day'] }}%
+                        </td>
+                        <td>
+                            {% if info['change_hour'] > 0 %}
+                                <span class="up-arrow">▲</span>
+                            {% elif info['change_hour'] < 0 %}
+                                <span class="down-arrow">▼</span>
+                            {% endif %}
+                            {{ info['change_hour'] }}%
+                        </td>
+                        <td>
+                            <div class="chart-container">
+                                <canvas id="chart-{{ coin }}"></canvas>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // JavaScript code to create a chart for each selected cryptocurrency
+        {% for coin, info in crypto_data.items() %}
+            var ctx_{{ coin }} = document.getElementById('chart-{{ coin }}').getContext('2d');
+            var data_{{ coin }} = {
+                labels: {{ chart_data[coin].labels | tojson | safe }},
+                datasets: [{
+                    label: 'Price (USD)',
+                    data: {{ chart_data[coin].data | tojson | safe }},
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 2,
+                    fill: false,
+                }]
+            };
+            var config_{{ coin }} = {
+                type: 'line',
+                data: data_{{ coin }},
+            };
+            var priceChart_{{ coin }} = new Chart(ctx_{{ coin }}, config_{{ coin }});
+        {% endfor %}
+    </script>
+
+    <!-- Add Bootstrap JS and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
