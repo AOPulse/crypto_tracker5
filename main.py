@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 app = Flask(__name__)
 
 def get_prices():
-    coins = ["BTC", "ETH", "XRP", "DOGE", "ADA", "SOL", "LINK", "BNB", "CAKE", "ARB", "ARKM", "SHIB"]
+    coins = ["BTC", "ETH", "XRP", "DOGE", "ADA", "SOL", "LINK", "BNB", "CAKE", "ARB", "ARKM"]
 
     crypto_data = requests.get(
         "https://min-api.cryptocompare.com/data/pricemultifull?fsyms={}&tsyms=USD".format(",".join(coins))).json()["RAW"]
