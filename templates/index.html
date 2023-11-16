@@ -75,6 +75,14 @@
             border-bottom: 1px solid #dee2e6;
             margin-bottom: 20px;
         }
+
+        .modal-dialog {
+            max-width: 800px;
+        }
+
+        .modal-content {
+            padding: 20px;
+        }
     </style>
 </head>
 <body>
@@ -93,40 +101,61 @@
 
         <!-- Tab Content -->
         <div class="tab-content mt-3">
-         <!-- Prices Tab Content -->
-<div id="prices" class="tab-pane fade show active">
-    <table class="table mt-3">
-        <thead>
-            <tr>
-                <th>Coin</th>
-                <th>Price (USD)</th>
-                <th>Change (24h)</th>
-                <th>7 Days Chart</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for coin, info in crypto_data.items() %}
-                <tr>
-                    <td>{{ info['coin'] }}</td>
-                    <td>{{ info['price'] }}</td>
-                    <td>
-                        {% if info['change_day'] > 0 %}
-                            <span class="up-arrow">▲</span>
-                        {% elif info['change_day'] < 0 %}
-                            <span class="down-arrow">▼</span>
-                        {% endif %}
-                        {{ info['change_day'] }}%
-                    </td>
-                    <td>
-                        <div class="chart-container">
-                            <canvas id="chart-{{ coin }}"></canvas>
-                        </div>
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
+            <!-- Prices Tab Content -->
+            <div id="prices" class="tab-pane fade show active">
+                <table class="table mt-3">
+                    <thead>
+                        <tr>
+                            <th>Coin</th>
+                            <th>Price (USD)</th>
+                            <th>Change (24h)</th>
+                            <th>Chart</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for coin, info in crypto_data.items() %}
+                            <tr>
+                                <td>{{ info['coin'] }}</td>
+                                <td>${{ info['price'] }}</td>
+                                <td>
+                                    {% if info['change_day'] > 0 %}
+                                        <span class="up-arrow">▲</span>
+                                    {% elif info['change_day'] < 0 %}
+                                        <span class="down-arrow">▼</span>
+                                    {% endif %}
+                                    {{ info['change_day'] }}%
+                                </td>
+                                <td>
+                                    <button class="btn btn-link" data-toggle="modal" data-target="#chartModal-{{ coin }}">
+                                        Chart
+                                    </button>
+                                    <!-- Modal -->
+                                    <div class="modal fade" id="chartModal-{{ coin }}" tabindex="-1" role="dialog" aria-labelledby="chartModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="chartModalLabel">{{ info['coin'] }} Chart</h5>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="chart-container">
+                                                        <canvas id="chart-{{ coin }}" width="400" height="200"></canvas>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
 
             <!-- News Tab Content -->
             <div id="news" class="tab-pane fade">
@@ -135,32 +164,58 @@
         </div>
     </div>
 
-    <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        {% for coin, info in crypto_data.items() %}
-            var ctx_{{ coin }} = document.getElementById('chart-{{ coin }}').getContext('2d');
-            var data_{{ coin }} = {
-                labels: {{ chart_data[coin]['labels'] | tojson | safe }},
-                datasets: [{
-                    label: 'Price (USD)',
-                    data: {{ chart_data[coin]['data'] | tojson | safe }},
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 2,
-                    fill: false,
-                }]
-            };
-            var config_{{ coin }} = {
-                type: 'line',
-                data: data_{{ coin }},
-            };
-            var priceChart_{{ coin }} = new Chart(ctx_{{ coin }}, config_{{ coin }});
-        {% endfor %}
-    });
-</script>
-
     <!-- Add Bootstrap JS and jQuery -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            {% for coin, info in crypto_data.items() %}
+                var ctx_{{ coin }} = document.getElementById('chart-{{ coin }}').getContext('2d');
+                var data_{{ coin }} = {
+                    labels: {{ chart_data[coin].labels | tojson | safe }},
+                    datasets: [{
+                        label: '{{ info["coin"] }} Price (USD)',
+                        data: {{ chart_data[coin].data | tojson | safe }},
+                        fill: 'rgba(173, 216, 230, 0.4)',
+                        borderColor: 'rgba(70, 130, 180, 1)',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                    }]
+                };
+                var config_{{ coin }} = {
+                    type: 'line',
+                    data: data_{{ coin }},
+                    options: {
+                        scales: {
+                            x: [{
+                                grid: {
+                                    display: false
+                                }
+                            }],
+                            y: [{
+                                grid: {
+                                    color: 'rgba(169, 169, 169, 0.1)',
+                                },
+                                ticks: {
+                                    beginAtZero: false,
+                                },
+                            }]
+                        },
+                        elements: {
+                            line: {
+                                tension: 0.4,
+                            }
+                        },
+                        legend: {
+                            display: false,
+                        }
+                    }
+                };
+                var myChart_{{ coin }} = new Chart(ctx_{{ coin }}, config_{{ coin }});
+            {% endfor %}
+        });
+    </script>
 </body>
 </html>
