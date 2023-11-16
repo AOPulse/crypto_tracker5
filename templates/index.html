@@ -93,22 +93,40 @@
 
         <!-- Tab Content -->
         <div class="tab-content mt-3">
-            <!-- Prices Tab Content -->
-            <div id="prices" class="tab-pane fade show active">
-                <table class="table mt-3">
-                    <thead>
-                        <tr>
-                            <th>Coin</th>
-                            <th>Price (USD)</th>
-                            <th>Change (24h)</th>
-                            <th>7 Days Chart</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Add dynamic content here -->
-                    </tbody>
-                </table>
-            </div>
+         <!-- Prices Tab Content -->
+<div id="prices" class="tab-pane fade show active">
+    <table class="table mt-3">
+        <thead>
+            <tr>
+                <th>Coin</th>
+                <th>Price (USD)</th>
+                <th>Change (24h)</th>
+                <th>7 Days Chart</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for coin, info in crypto_data.items() %}
+                <tr>
+                    <td>{{ info['coin'] }}</td>
+                    <td>{{ info['price'] }}</td>
+                    <td>
+                        {% if info['change_day'] > 0 %}
+                            <span class="up-arrow">▲</span>
+                        {% elif info['change_day'] < 0 %}
+                            <span class="down-arrow">▼</span>
+                        {% endif %}
+                        {{ info['change_day'] }}%
+                    </td>
+                    <td>
+                        <div class="chart-container">
+                            <canvas id="chart-{{ coin }}"></canvas>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 
             <!-- News Tab Content -->
             <div id="news" class="tab-pane fade">
@@ -118,8 +136,27 @@
     </div>
 
     <script>
-        // Your JavaScript code for chart creation goes here
-    </script>
+    document.addEventListener("DOMContentLoaded", function () {
+        {% for coin, info in crypto_data.items() %}
+            var ctx_{{ coin }} = document.getElementById('chart-{{ coin }}').getContext('2d');
+            var data_{{ coin }} = {
+                labels: {{ chart_data[coin]['labels'] | tojson | safe }},
+                datasets: [{
+                    label: 'Price (USD)',
+                    data: {{ chart_data[coin]['data'] | tojson | safe }},
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 2,
+                    fill: false,
+                }]
+            };
+            var config_{{ coin }} = {
+                type: 'line',
+                data: data_{{ coin }},
+            };
+            var priceChart_{{ coin }} = new Chart(ctx_{{ coin }}, config_{{ coin }});
+        {% endfor %}
+    });
+</script>
 
     <!-- Add Bootstrap JS and jQuery -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
