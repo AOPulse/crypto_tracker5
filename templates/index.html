@@ -3,36 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cryptocurrency Dashboard</title>
+    <title>Crypto Dashboard</title>
     <!-- Include Bootstrap CSS and Bootstrap Darkly theme -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap-theme.min.css" rel="stylesheet">
+    <!-- Include Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <!-- Include Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
-            background-color: #343a40;
-            color: #ffffff;
+            background-color: #f8f9fa;
         }
 
         .container {
-            background-color: #212529;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             padding: 20px;
-            border-radius: 10px;
             margin-top: 20px;
         }
 
-        table {
-            background-color: #343a40;
+        h1 {
+            color: #343a40;
         }
 
-        table th, table td {
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table, th, td {
+            border: 1px solid #dee2e6;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #343a40;
             color: #ffffff;
         }
 
         .chart-container {
-            max-width: 400px;
-            max-height: 200px;
+            max-width: 100%;
+            height: 300px;
         }
 
         .up-arrow {
@@ -43,105 +60,65 @@
             color: red;
         }
 
-        #loading-indicator {
-            text-align: center;
-            margin-top: 20px;
+        .nav-tabs .nav-link.active {
+            background-color: #343a40;
+            color: #ffffff;
+            border-color: #343a40;
+        }
+
+        .nav-tabs .nav-link {
+            color: #343a40;
+            border: 1px solid #dee2e6;
+        }
+
+        .nav-tabs {
+            border-bottom: 1px solid #dee2e6;
+            margin-bottom: 20px;
         }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <a class="navbar-brand" href="#">Crypto Dashboard</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav">
-                <li class="nav-item active">
-                    <a class="nav-link" href="#prices">Prices</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#news">News Articles</a>
-                </li>
-            </ul>
-        </div>
-    </nav>
-
     <div class="container">
-        <h1 class="mt-5 mb-4">Cryptocurrency Dashboard</h1>
+        <h1 class="mt-4 mb-4">Crypto Dashboard</h1>
 
-        <!-- Prices Tab Content -->
-        <div id="prices">
-            <div id="loading-indicator">
-                <div class="spinner-border text-light" role="status">
-                    <span class="sr-only">Loading...</span>
-                </div>
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a class="nav-link active" id="prices-tab" data-toggle="tab" href="#prices">Prices</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="news-tab" data-toggle="tab" href="#news">News</a>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content mt-3">
+            <!-- Prices Tab Content -->
+            <div id="prices" class="tab-pane fade show active">
+                <table class="table mt-3">
+                    <thead>
+                        <tr>
+                            <th>Coin</th>
+                            <th>Price (USD)</th>
+                            <th>Change (24h)</th>
+                            <th>7 Days Chart</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Add dynamic content here -->
+                    </tbody>
+                </table>
             </div>
 
-            <table class="table table-striped table-bordered mt-3">
-                <thead>
-                    <tr>
-                        <th>Coin</th>
-                        <th>Price (USD)</th>
-                        <th>Change (24h)</th>
-                        <th>7 Days Chart</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for coin, info in crypto_data.items() %}
-                        <tr>
-                            <td>{{ info['coin'] }}</td>
-                            <td>{{ info['price'] }}</td>
-                            <td>
-                                {% if info['change_day'] > 0 %}
-                                    <span class="up-arrow">▲</span>
-                                {% elif info['change_day'] < 0 %}
-                                    <span class="down-arrow">▼</span>
-                                {% endif %}
-                                {{ info['change_day'] }}%
-                            </td>
-                            <td>
-                                <div class="chart-container">
-                                    <canvas id="chart-{{ coin }}"></canvas>
-                                </div>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-        <!-- News Tab Content -->
-        <div id="news" style="display: none;">
-            <!-- Add your news content here -->
+            <!-- News Tab Content -->
+            <div id="news" class="tab-pane fade">
+                <!-- Add your news content here -->
+            </div>
         </div>
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            // Hide loading indicator
-            document.getElementById("loading-indicator").style.display = "none";
-
-            // JavaScript code to create a chart for each selected cryptocurrency
-            {% for coin, info in crypto_data.items() %}
-                var ctx_{{ coin }} = document.getElementById('chart-{{ coin }}').getContext('2d');
-                var data_{{ coin }} = {
-                    labels: {{ chart_data[coin].labels | tojson | safe }},
-                    datasets: [{
-                        label: 'Price (USD)',
-                        data: {{ chart_data[coin].data | tojson | safe }},
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 2,
-                        fill: false,
-                    }]
-                };
-                var config_{{ coin }} = {
-                    type: 'line',
-                    data: data_{{ coin }},
-                };
-                var priceChart_{{ coin }} = new Chart(ctx_{{ coin }}, config_{{ coin }});
-            {% endfor %}
-        });
+        // Your JavaScript code for chart creation goes here
     </script>
 
     <!-- Add Bootstrap JS and jQuery -->
